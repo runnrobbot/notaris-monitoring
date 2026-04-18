@@ -116,7 +116,7 @@ function MobileCard({ doc, companyMap, idx, onPreview, onEdit, onDelete }) {
       </div>
 
       {/* Main info */}
-      <p style={{ fontFamily:"'Outfit',sans-serif", fontSize:15, fontWeight:600, color:'#fff', marginBottom:3 }}>{doc.pihak_pertama || '—'}</p>
+      <p style={{ fontFamily:"'Outfit',sans-serif", fontSize:15, fontWeight:600, color:'#fff', marginBottom:3 }}>{doc.pihak_kedua || '—'}</p>
       <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:10 }}>
         {companyMap[doc.company_id] && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:'rgba(255,255,255,0.45)', background:'var(--bg-raised)', padding:'2px 7px', borderRadius:4, border:'1px solid var(--border)' }}>{companyMap[doc.company_id]}</span>}
         {doc.jenis_akad && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:'rgba(255,255,255,0.45)', background:'var(--bg-raised)', padding:'2px 7px', borderRadius:4, border:'1px solid var(--border)' }}>{doc.jenis_akad}</span>}
@@ -311,8 +311,8 @@ export default function DocumentsPage() {
             <thead>
               <tr style={{ borderBottom:'1px solid var(--border-mid)' }}>
                 <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)' }}>#</th>
-                <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)', minWidth:110 }}>Perusahaan</th>
-                <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)', minWidth:130 }}>Debitur</th>
+                <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)', minWidth:110 }}>Pihak Pertama</th>
+                <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)', minWidth:130 }}>Pihak Kedua</th>
                 <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)' }}>Akad</th>
                 <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)' }}>Bank</th>
                 <th colSpan={5} style={{ ...TH, textAlign:'center', borderRight:'1px solid var(--border)', color:'rgba(255,255,255,0.55)' }}>Akad &amp; Pajak</th>
@@ -342,8 +342,8 @@ export default function DocumentsPage() {
                   onMouseEnter={e=>e.currentTarget.style.background='var(--bg-raised)'}
                   onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
                   <td style={{ ...TD, color:'rgba(255,255,255,0.3)', borderRight:'1px solid var(--border)' }}>{(page-1)*PAGE_SIZE+idx+1}</td>
-                  <td style={{ ...TD, maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', borderRight:'1px solid var(--border)', color:'rgba(255,255,255,0.6)' }} title={companyMap[doc.company_id]}>{companyMap[doc.company_id]||'—'}</td>
-                  <td style={{ ...TD, fontFamily:"'Outfit',sans-serif", fontWeight:600, maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', borderRight:'1px solid var(--border)', fontSize:12 }} title={doc.pihak_pertama}>{doc.pihak_pertama||'—'}</td>
+                  <td style={{ ...TD, maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', borderRight:'1px solid var(--border)', color:'rgba(255,255,255,0.6)' }} title={doc.pihak_pertama}>{doc.pihak_pertama||'—'}</td>
+                  <td style={{ ...TD, fontFamily:"'Outfit',sans-serif", fontWeight:600, maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', borderRight:'1px solid var(--border)', fontSize:12 }} title={doc.pihak_kedua}>{doc.pihak_kedua||'—'}</td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)', color:'rgba(255,255,255,0.6)' }}>{doc.jenis_akad||'—'}</td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)', color:'rgba(255,255,255,0.6)' }}>{doc.bank||'—'}</td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)' }}>
