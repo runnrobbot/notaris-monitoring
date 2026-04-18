@@ -4,15 +4,6 @@ const SERVICES = [
   {
     icon: (
       <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-      </svg>
-    ),
-    title: 'Akta Jual Beli',
-    desc: 'Pembuatan akta jual beli tanah dan bangunan yang sah secara hukum.',
-  },
-  {
-    icon: (
-      <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
       </svg>
     ),
@@ -52,8 +43,17 @@ const SERVICES = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
       </svg>
     ),
-    title: 'Kredit & Roya',
+    title: 'HT & Roya',
     desc: 'Pengurusan akad kredit perbankan dan roya (pencoretan) hak tanggungan.',
+  },
+  {
+    icon: (
+      <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+      </svg>
+    ),
+    title: 'Dan Lain Lain',
+    desc: '',
   },
 ]
 
@@ -221,7 +221,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="lp-anim-2" style={{ fontSize:12, color:'var(--text-muted)', letterSpacing:'0.20em', textTransform:'uppercase', marginBottom:32 }}>
-            Notaris &nbsp;·&nbsp; Pejabat Pembuat Akta Tanah
+            Notaris &nbsp;·&nbsp; PPAT
           </p>
 
           <p className="lp-baskerville lp-anim-3" style={{ fontSize:15, color:'var(--text-dim)', lineHeight:1.9, maxWidth:560, margin:'0 auto 40px' }}>
@@ -266,10 +266,9 @@ export default function LandingPage() {
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
             {[
-              { num:'100%', label:'Legalitas Terjamin' },
-              { num:'≤7 Hari', label:'Proses Cepat' },
-              { num:'Resmi', label:'Notaris & PPAT Tersertifikasi' },
-              { num:'24 Jam', label:'Konsultasi Tersedia' },
+              { num:'Proses Cepat', label:'Gercep dan Sat Set' },
+              { num:'Notaris & PPAT Tersertifikasi', label:'' },
+              { num:'Konsultasi', label:'' },
             ].map(({ num, label }) => (
               <div key={label} style={{ background:'var(--navy-3)', border:'1px solid var(--border)', borderRadius:8, padding:'22px 18px', textAlign:'center' }}>
                 <p className="lp-cormorant" style={{ fontSize:26, fontWeight:700, color:'var(--gold-light)', lineHeight:1, marginBottom:8 }}>{num}</p>
