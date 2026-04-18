@@ -3,12 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import {
   getDocuments, getDocumentsByCompanies,
-  addDocument, updateDocument, deleteDocument, getCompanies,
+  addDocument, updateDocument, softDeleteDocument, getCompanies,
 } from '../services/supabaseService'
+import { supabase } from '../supabase'
 import DocumentModal from '../components/DocumentModal'
 import PreviewModal  from '../components/PreviewModal'
 import { ImportModal } from '../components/ImportModal'
 import { exportToExcel } from '../utils/excelUtils'
+import toast from 'react-hot-toast'
 
 const DATE_COLS = [
   { key:'tanggal_pengecekan',      short:'CEK',  label:'Pengecekan' },
@@ -175,6 +177,17 @@ export default function DocumentsPage() {
     const assigned = userProfile.assigned_companies || []
     const promise  = isStaff ? getDocumentsByCompanies(assigned) : getDocuments()
     promise.then(data => { setDocs(data); setLoading(false) })
+
+    // Realtime — update otomatis tanpa refresh
+    const channel = supabase
+      .channel('documents-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, () => {
+        const p = isStaff ? getDocumentsByCompanies(assigned) : getDocuments()
+        p.then(data => setDocs(data))
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [userProfile])
 
   const filtered = docs.filter(d => {
@@ -213,7 +226,11 @@ export default function DocumentsPage() {
   async function handleDelete() {
     if (!deleteId) return
     setDeleting(true)
-    try { await deleteDocument(deleteId); setDocs(prev => prev.filter(d => d.id !== deleteId)) }
+    try {
+      await softDeleteDocument(deleteId)
+      setDocs(prev => prev.filter(d => d.id !== deleteId))
+      toast.success('Dokumen dipindahkan ke sampah')
+    } catch { toast.error('Gagal memindahkan ke sampah') }
     finally { setDeleting(false); setDeleteId(null) }
   }
 
@@ -294,8 +311,8 @@ export default function DocumentsPage() {
             <thead>
               <tr style={{ borderBottom:'1px solid var(--border-mid)' }}>
                 <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)' }}>#</th>
-                <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)', minWidth:110 }}>Pihak Pertama</th>
-                <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)', minWidth:130 }}>Pihak Kedua</th>
+                <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)', minWidth:110 }}>Perusahaan</th>
+                <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)', minWidth:130 }}>Debitur</th>
                 <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)' }}>Akad</th>
                 <th rowSpan={2} style={{ ...TH, textAlign:'left', borderRight:'1px solid var(--border)' }}>Bank</th>
                 <th colSpan={5} style={{ ...TH, textAlign:'center', borderRight:'1px solid var(--border)', color:'rgba(255,255,255,0.55)' }}>Akad &amp; Pajak</th>
@@ -417,13 +434,13 @@ export default function DocumentsPage() {
       {deleteId && (
         <div style={{ position:'fixed', inset:0, zIndex:9998, display:'flex', alignItems:'center', justifyContent:'center', padding:16, background:'rgba(5,10,18,0.82)' }}>
           <div style={{ width:'100%', maxWidth:380, borderRadius:12, padding:24, background:'var(--bg-surface)', border:'1px solid var(--border-mid)', boxShadow:'var(--shadow-lg)' }}>
-            <h3 style={{ fontFamily:"'Outfit',sans-serif", fontSize:18, fontWeight:600, color:'#fff', marginBottom:8 }}>Hapus Record?</h3>
-            <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:'rgba(255,255,255,0.45)', marginBottom:24, lineHeight:1.6 }}>Tindakan ini tidak dapat dibatalkan.</p>
+            <h3 style={{ fontFamily:"'Outfit',sans-serif", fontSize:18, fontWeight:600, color:'#fff', marginBottom:8 }}>Pindahkan ke Sampah?</h3>
+            <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:12, color:'rgba(255,255,255,0.45)', marginBottom:24, lineHeight:1.6 }}>Dokumen akan dipindahkan ke Sampah dan dapat dipulihkan kapan saja.</p>
             <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}>
               <button onClick={()=>setDeleteId(null)} style={{ ...btnBase, color:'rgba(255,255,255,0.6)', background:'var(--bg-raised)' }}>Batal</button>
               <button onClick={handleDelete} disabled={deleting}
                 style={{ ...btnBase, background:'rgba(224,82,82,0.12)', color:'#e05252', border:'1px solid rgba(224,82,82,0.25)' }}>
-                {deleting ? 'Menghapus…' : 'Ya, Hapus'}
+                {deleting ? 'Memindahkan…' : 'Pindahkan ke Sampah'}
               </button>
             </div>
           </div>

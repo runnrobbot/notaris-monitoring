@@ -44,16 +44,16 @@ const SERVICES = [
       </svg>
     ),
     title: 'HT & Roya',
-    desc: 'Pengurusan akad kredit perbankan dan roya (pencoretan) hak tanggungan.',
+    desc: 'Pengurusan hak tanggungan (HT) dan roya (pencoretan) hak tanggungan perbankan.',
   },
   {
     icon: (
       <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
       </svg>
     ),
-    title: 'Dan Lain Lain',
-    desc: '',
+    title: 'Dan Lain-lain',
+    desc: 'Layanan notarial lainnya sesuai kebutuhan hukum Anda — konsultasikan kebutuhan Anda kepada kami.',
   },
 ]
 
@@ -221,7 +221,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="lp-anim-2" style={{ fontSize:12, color:'var(--text-muted)', letterSpacing:'0.20em', textTransform:'uppercase', marginBottom:32 }}>
-            Notaris &nbsp;·&nbsp; PPAT
+            Notaris &nbsp;·&nbsp; Pejabat Pembuat Akta Tanah
           </p>
 
           <p className="lp-baskerville lp-anim-3" style={{ fontSize:15, color:'var(--text-dim)', lineHeight:1.9, maxWidth:560, margin:'0 auto 40px' }}>
@@ -264,15 +264,29 @@ export default function LandingPage() {
               Dengan pengalaman di bidang pertanahan dan dokumen hukum, kami siap mendampingi setiap klien dalam proses yang aman dan sesuai regulasi berlaku.
             </p>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16 }}>
             {[
-              { num:'Proses Cepat', label:'Gercep dan Sat Set' },
-              { num:'Notaris & PPAT Tersertifikasi', label:'' },
-              { num:'Konsultasi', label:'' },
-            ].map(({ num, label }) => (
+              { icon: (
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              ), label:'Notaris & PPAT Tersertifikasi' },
+              { icon: (
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+                </svg>
+              ), label:'Proses Cepat' },
+              { icon: (
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/>
+                </svg>
+              ), label:'Konsultasi' },
+            ].map(({ icon, label }) => (
               <div key={label} style={{ background:'var(--navy-3)', border:'1px solid var(--border)', borderRadius:8, padding:'22px 18px', textAlign:'center' }}>
-                <p className="lp-cormorant" style={{ fontSize:26, fontWeight:700, color:'var(--gold-light)', lineHeight:1, marginBottom:8 }}>{num}</p>
-                <p style={{ fontSize:11, color:'var(--text-muted)', letterSpacing:'0.04em', lineHeight:1.4 }}>{label}</p>
+                <div style={{ width:44, height:44, borderRadius:'50%', background:'var(--gold-dim)', border:'1px solid var(--gold-border)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--gold)', margin:'0 auto 12px' }}>
+                  {icon}
+                </div>
+                <p style={{ fontSize:13, color:'var(--text)', fontFamily:"'Libre Baskerville', serif", lineHeight:1.4 }}>{label}</p>
               </div>
             ))}
           </div>

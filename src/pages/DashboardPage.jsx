@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { getDocuments, getDocumentsByCompanies, getCompanies } from '../services/supabaseService'
+import { supabase } from '../supabase'
 import { FileText, Building2, CheckCircle2, Clock, RefreshCw, ArrowRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -47,7 +48,18 @@ export default function DashboardPage() {
     finally { setLoading(false) }
   }
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => {
+    fetchData()
+
+    // Realtime — update otomatis tanpa refresh
+    const channel = supabase
+      .channel('dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, () => { fetchData() })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => { fetchData() })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [])
 
   const total   = docs.length
   const selesai = docs.filter(d => !!d.tanggal_selesai).length

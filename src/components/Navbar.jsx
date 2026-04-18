@@ -8,6 +8,7 @@ const TITLES = {
   '/documents': 'Monitoring Dokumen',
   '/companies': 'Perusahaan',
   '/users': 'Manajemen Pengguna',
+  '/trash': 'Sampah',
 }
 
 export function Navbar({ onMenuClick }) {

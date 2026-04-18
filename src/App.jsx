@@ -3,12 +3,13 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AppLayout } from './layouts/AppLayout'
-import LandingPage  from './pages/LandingPage'
-import LoginPage    from './pages/LoginPage'
+import LandingPage   from './pages/LandingPage'
+import LoginPage     from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import DocumentsPage from './pages/DocumentsPage'
 import CompaniesPage from './pages/CompaniesPage'
-import UsersPage    from './pages/UsersPage'
+import UsersPage     from './pages/UsersPage'
+import TrashPage     from './pages/TrashPage'
 
 export default function App() {
   return (
@@ -33,12 +34,14 @@ export default function App() {
         <Route path="/"      element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected */}
+        {/* Protected — semua di dalam ProtectedRoute + AppLayout */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/documents" element={<DocumentsPage />} />
             <Route path="/companies" element={<CompaniesPage />} />
+            <Route path="/trash"     element={<TrashPage />} />
+
             <Route element={<ProtectedRoute adminOnly />}>
               <Route path="/users" element={<UsersPage />} />
             </Route>
