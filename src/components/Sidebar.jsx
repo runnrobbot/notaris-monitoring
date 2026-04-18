@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { LayoutDashboard, FileText, Building2, Users, Scale, X } from 'lucide-react'
+import { LayoutDashboard, FileText, Building2, Users, X } from 'lucide-react'
+import logoSrc from '../assets/logo.png'
 
 const NAV = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/documents', label: 'Dokumen', icon: FileText },
+  { to: '/dashboard', label: 'Dashboard',  icon: LayoutDashboard },
+  { to: '/documents', label: 'Dokumen',    icon: FileText },
   { to: '/companies', label: 'Perusahaan', icon: Building2 },
 ]
 const ADMIN_NAV = [{ to: '/users', label: 'Pengguna', icon: Users }]
@@ -16,66 +17,74 @@ export function Sidebar({ open, onClose }) {
     <aside
       style={{
         background: 'var(--bg-surface)',
-        borderRight: '1px solid var(--border)',
+        borderRight: '1px solid var(--border-mid)',
+        width: '15rem',
+        flexShrink: 0,
         transition: 'transform 0.3s ease',
+        display: 'flex',
+        flexDirection: 'column',
       }}
-      className={`fixed inset-y-0 left-0 z-30 w-60 flex flex-col
-        lg:relative lg:translate-x-0 lg:z-auto
-        ${open ? 'translate-x-0' : '-translate-x-full'}`}
+      className={`fixed inset-y-0 left-0 z-30 lg:relative lg:translate-x-0 lg:z-auto ${open ? 'translate-x-0' : '-translate-x-full'}`}
     >
-      {/* Logo */}
-      <div className="flex items-center justify-between px-5 py-5" style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold-border)' }}>
-            <Scale className="h-4 w-4" style={{ color: 'var(--gold)' }} />
+      {/* ── Logo ── */}
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <img
+              src={logoSrc}
+              alt="Logo"
+              style={{ height: 38, width: 'auto', objectFit: 'contain', flexShrink: 0, filter: 'drop-shadow(0 1px 4px rgba(201,153,26,0.18))' }}
+            />
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontFamily: "'EB Garamond', serif", fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                Monitoring Notaris/PPAT
+              </p>
+              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8, letterSpacing: '0.12em', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                Yusef Hudaya, SH., MKn
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-bold leading-none" style={{ color: 'var(--text-primary)', fontFamily: "'Cormorant Garamond', serif", fontSize: '16px' }}>
-              DocuMonitor
-            </p>
-            <p className="text-[9px] uppercase tracking-widest mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Legal Tracker
-            </p>
-          </div>
+          <button onClick={onClose} className="lg:hidden" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, flexShrink: 0 }}>
+            <X size={16} />
+          </button>
         </div>
-        <button onClick={onClose} className="lg:hidden p-1 rounded" style={{ color: 'var(--text-muted)' }}>
-          <X className="h-4 w-4" />
-        </button>
       </div>
 
-      {/* User */}
-      <div className="mx-4 my-4 rounded-xl px-3.5 py-3" style={{ background: 'var(--bg-raised)', border: '1px solid var(--border)' }}>
-        <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ background: 'var(--gold-dim)', color: 'var(--gold)' }}>
+      {/* ── User ── */}
+      <div style={{ margin: '12px 14px', borderRadius: 10, padding: '10px 14px', background: 'var(--bg-raised)', border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--gold-dim)', border: '1.5px solid var(--gold-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'EB Garamond', serif", fontSize: 16, fontWeight: 700, color: 'var(--gold-400)', flexShrink: 0 }}>
             {(userProfile?.name || userProfile?.email || 'U')[0].toUpperCase()}
           </div>
-          <div className="min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: '#ffffff' }}>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {userProfile?.name || userProfile?.email}
             </p>
-            <p className="text-[10px] uppercase tracking-wider mt-0.5" style={{ color: 'var(--gold)', opacity: 0.8 }}>
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '0.10em', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', marginTop: 1 }}>
               {userProfile?.role}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 space-y-0.5">
-        <p className="text-[9px] uppercase tracking-widest px-3 pb-2 pt-1" style={{ color: 'var(--text-muted)' }}>Menu</p>
+      {/* ── Nav ── */}
+      <nav style={{ flex: 1, padding: '4px 10px' }}>
+        <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '0.14em', color: 'var(--text-muted)', textTransform: 'uppercase', padding: '8px 10px 6px' }}>Menu</p>
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isActive ? 'active-nav' : ''}`
-            }
-            style={({ isActive }) => isActive
-              ? { background: 'var(--gold-dim)', color: 'var(--gold)', border: '1px solid var(--gold-border)' }
-              : { color: '#bbbbbb', border: '1px solid transparent' }
-            }
+            className={({ isActive }) => isActive ? 'nav-active' : ''}
+            style={({ isActive }) => ({
+              display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8, padding: '9px 12px',
+              fontSize: 13, fontWeight: 500, transition: 'all 0.15s', textDecoration: 'none',
+              border: '1px solid transparent', marginBottom: 2,
+              color: isActive ? 'var(--gold-400)' : 'var(--text-secondary)',
+              background: isActive ? 'var(--gold-dim)' : 'transparent',
+              borderColor: isActive ? 'var(--gold-border)' : 'transparent',
+            })}
           >
             {({ isActive }) => (
               <>
-                <Icon className="h-4 w-4 flex-shrink-0" style={isActive ? { color: 'var(--gold)' } : {}} />
+                <Icon size={15} style={{ color: isActive ? 'var(--gold-400)' : 'var(--text-muted)', flexShrink: 0 }} />
                 {label}
               </>
             )}
@@ -84,18 +93,21 @@ export function Sidebar({ open, onClose }) {
 
         {isAdmin && (
           <>
-            <p className="text-[9px] uppercase tracking-widest px-3 pb-2 pt-5" style={{ color: 'var(--text-muted)' }}>Admin</p>
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '0.14em', color: 'var(--text-muted)', textTransform: 'uppercase', padding: '14px 10px 6px' }}>Admin</p>
             {ADMIN_NAV.map(({ to, label, icon: Icon }) => (
               <NavLink key={to} to={to} onClick={onClose}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all"
-                style={({ isActive }) => isActive
-                  ? { background: 'var(--gold-dim)', color: 'var(--gold)', border: '1px solid var(--gold-border)' }
-                  : { color: '#bbbbbb', border: '1px solid transparent' }
-                }
+                style={({ isActive }) => ({
+                  display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8, padding: '9px 12px',
+                  fontSize: 13, fontWeight: 500, transition: 'all 0.15s', textDecoration: 'none',
+                  border: '1px solid transparent', marginBottom: 2,
+                  color: isActive ? 'var(--gold-400)' : 'var(--text-secondary)',
+                  background: isActive ? 'var(--gold-dim)' : 'transparent',
+                  borderColor: isActive ? 'var(--gold-border)' : 'transparent',
+                })}
               >
                 {({ isActive }) => (
                   <>
-                    <Icon className="h-4 w-4 flex-shrink-0" style={isActive ? { color: 'var(--gold)' } : {}} />
+                    <Icon size={15} style={{ color: isActive ? 'var(--gold-400)' : 'var(--text-muted)', flexShrink: 0 }} />
                     {label}
                   </>
                 )}
@@ -105,10 +117,8 @@ export function Sidebar({ open, onClose }) {
         )}
       </nav>
 
-      <div className="px-5 py-4" style={{ borderTop: '1px solid var(--border)' }}>
-        <p className="text-center text-[10px]" style={{ color: 'var(--text-muted)' }}>
-          DocuMonitor v1.0
-        </p>
+      <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+        <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.10em', textTransform: 'uppercase' }}>v1.0 · Monitoring Notaris/PPAT</p>
       </div>
     </aside>
   )

@@ -1,29 +1,57 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --gold: #C9A84C;
-  --gold-light: #E2C97E;
-  --gold-dim: rgba(201, 168, 76, 0.12);
-  --gold-border: rgba(201, 168, 76, 0.25);
-  --bg-base: #0f0f0f;
-  --bg-surface: #181818;
-  --bg-raised: #202020;
-  --bg-hover: #2a2a2a;
-  --border: rgba(255,255,255,0.07);
-  --border-strong: rgba(255,255,255,0.12);
-  --text-primary: #ffffff;
-  --text-secondary: #c8c8c8;
-  --text-muted: #888888;
+  /* Navy notarial palette */
+  --navy-900:  #0D1B2A;
+  --navy-800:  #162032;
+  --navy-700:  #1E2D3D;
+  --navy-600:  #253545;
+  --navy-500:  #344B5F;
+  --navy-400:  #4A6378;
+  --navy-300:  #6B859A;
+  --navy-200:  #9BB0C0;
+  --navy-100:  #C8D8E3;
+  --navy-50:   #EBF1F5;
+
+  --gold-500:  #C9991A;
+  --gold-400:  #DFB13A;
+  --gold-300:  #ECC96A;
+  --gold-dim:  rgba(201,153,26,0.12);
+  --gold-border: rgba(201,153,26,0.30);
+
+  --white:     #FFFFFF;
+  --off-white: #F5F8FA;
+
+  --red:       #E05252;
+  --green:     #3DAA6E;
+
+  /* Semantic aliases */
+  --bg-base:      var(--navy-900);
+  --bg-surface:   var(--navy-800);
+  --bg-raised:    var(--navy-700);
+  --bg-hover:     var(--navy-600);
+  --border:       rgba(255,255,255,0.07);
+  --border-mid:   rgba(255,255,255,0.11);
+  --border-strong:rgba(255,255,255,0.16);
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.65);
+  --text-muted:   rgba(255,255,255,0.38);
+  --gold:         var(--gold-400);
+  --gold-light:   var(--gold-300);
+  --shadow-sm:    0 1px 4px rgba(0,0,0,0.25);
+  --shadow-md:    0 4px 20px rgba(0,0,0,0.35);
+  --shadow-lg:    0 16px 48px rgba(0,0,0,0.50);
+  --shadow-gold:  0 0 0 2px rgba(201,153,26,0.25);
 }
 
 @layer base {
   * { box-sizing: border-box; }
   html {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Outfit', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -33,23 +61,70 @@
     margin: 0;
   }
   h1, h2, h3, h4 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'EB Garamond', Georgia, serif;
     letter-spacing: 0.01em;
   }
-  /* Make native select/option readable on dark bg */
+  input, select, textarea {
+    font-family: 'Outfit', sans-serif;
+    color-scheme: dark;
+  }
   select option {
-    background: #202020;
-    color: #ffffff;
+    background: var(--navy-700);
+    color: var(--text-primary);
   }
 }
 
 @layer utilities {
+  .font-display { font-family: 'EB Garamond', serif; }
+  .font-mono    { font-family: 'JetBrains Mono', monospace; }
+
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #2a2a2a transparent;
+    scrollbar-color: var(--navy-600) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--navy-500); border-radius: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--gold-400); }
+
+  /* Status stamps */
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    border: 1.5px solid currentColor;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .stamp-gold  { color: var(--gold-300); background: var(--gold-dim); border-color: var(--gold-border); }
+  .stamp-blue  { color: var(--navy-200); background: rgba(255,255,255,0.05); border-color: rgba(155,176,192,0.3); }
+  .stamp-ghost { color: var(--navy-300); background: transparent; border-color: rgba(107,133,154,0.35); }
+
+  .nav-active {
+    background: var(--gold-dim) !important;
+    color: var(--gold-400) !important;
+    border-color: var(--gold-border) !important;
+  }
+
+  .hover-lift { transition: box-shadow 0.2s, transform 0.2s; }
+  .hover-lift:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 }
+
+/* Gold accent line top of card */
+.card-gold-top {
+  border-top: 2px solid var(--gold-400) !important;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.fade-up   { animation: fadeUp 0.35s ease both; }
+.fade-up-1 { animation: fadeUp 0.35s 0.05s ease both; }
+.fade-up-2 { animation: fadeUp 0.35s 0.10s ease both; }
+.fade-up-3 { animation: fadeUp 0.35s 0.15s ease both; }
+.fade-up-4 { animation: fadeUp 0.35s 0.20s ease both; }

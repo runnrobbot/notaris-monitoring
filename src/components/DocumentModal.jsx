@@ -1,193 +1,337 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import PdfUploadField from './PdfUploadField'
 
 const JENIS_AKAD = ['KPR','KPA','KKB','Multiguna','Komersial','Lainnya']
 const BANKS = ['BTN','BTN Syariah','BRI','BRI Syariah','BNI','BNI Syariah','Mandiri','BSI','CIMB Niaga','Danamon','Permata','Lainnya']
 const KEGIATAN = [
-  { key: 'tanggal_pengecekan',      label: 'Pengecekan' },
-  { key: 'tanggal_znt',             label: 'ZNT' },
-  { key: 'tanggal_alih_media',      label: 'Alih Media' },
-  { key: 'tanggal_balik_nama',      label: 'Balik Nama' },
-  { key: 'tanggal_peningkatan_shm', label: 'Peningkatan (SHM)' },
-  { key: 'tanggal_ht',              label: 'HT' },
-  { key: 'tanggal_roya',            label: 'Roya' },
+  { key:'tanggal_pengecekan',      label:'Pengecekan' },
+  { key:'tanggal_znt',             label:'ZNT' },
+  { key:'tanggal_alih_media',      label:'Alih Media' },
+  { key:'tanggal_balik_nama',      label:'Balik Nama' },
+  { key:'tanggal_peningkatan_shm', label:'Peningkatan (SHM)' },
+  { key:'tanggal_ht',              label:'HT' },
+  { key:'tanggal_roya',            label:'Roya' },
 ]
 const EMPTY = {
   no:'', pihak_pertama:'', pihak_kedua:'', jenis_akad:'', bank:'', company_id:'',
-  tanggal_pinjam:'', tanggal_diterima:'', tanggal_bayar_pajak:'', tanggal_akta:'',
+  tanggal_pinjam:'', pdf_pinjam:null,
+  tanggal_diterima:'', pdf_diterima:null,
+  tanggal_bayar_pajak:'', pdf_bayar_pajak:null,
+  tanggal_akta:'',
+  tanggal_akad:'',
   tanggal_pengecekan:'', tanggal_znt:'', tanggal_alih_media:'', tanggal_balik_nama:'',
   tanggal_peningkatan_shm:'', tanggal_ht:'', tanggal_roya:'',
-  tanggal_selesai:'', pdf_selesai:null, tanggal_register:'', pdf_register:null, keterangan:'',
+  tanggal_selesai:'', pdf_selesai:null,
+  tanggal_register:'', pdf_register:null,
+  keterangan:'',
 }
-const iS = { width:'100%', background:'var(--bg-raised)', border:'1px solid var(--border-strong)', color:'var(--text-primary)', borderRadius:'8px', padding:'8px 12px', fontSize:'13px', outline:'none' }
-const iE = { ...iS, borderColor:'#e05252' }
-const lS = { display:'block', fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.06em', color:'var(--text-secondary)', marginBottom:5 }
-const sT = { fontFamily:"'Cormorant Garamond', serif", fontSize:'15px', fontWeight:600, color:'var(--gold)', borderBottom:'1px solid var(--gold-border)', paddingBottom:6, marginBottom:14 }
 
-// Ubah string kosong ke null untuk field integer & date
-function cleanForm(form) {
-  const INTEGER_FIELDS = ['no']
-  const DATE_FIELDS = [
-    'tanggal_pinjam','tanggal_diterima','tanggal_bayar_pajak','tanggal_akta',
+const S = {
+  overlay: {
+    position:'fixed', inset:0, zIndex:9999,
+    display:'flex', alignItems:'center', justifyContent:'center',
+    padding:16, background:'rgba(5,10,18,0.82)',
+  },
+  modal: {
+    position:'relative', width:'100%', maxWidth:700,
+    height:'88vh', display:'flex', flexDirection:'column',
+    borderRadius:14, overflow:'hidden',
+    background:'var(--navy-800)',
+    border:'1px solid rgba(255,255,255,0.12)',
+    boxShadow:'0 24px 64px rgba(0,0,0,0.6)',
+  },
+  header: {
+    display:'flex', alignItems:'center', justifyContent:'space-between',
+    padding:'16px 24px', borderBottom:'1px solid rgba(255,255,255,0.09)', flexShrink:0,
+  },
+  body: { flex:1, overflowY:'auto', padding:'20px 24px' },
+  footer: {
+    display:'flex', justifyContent:'flex-end', gap:10,
+    padding:'14px 24px', borderTop:'1px solid rgba(255,255,255,0.09)',
+    background:'var(--navy-900)', flexShrink:0,
+  },
+  secTitle: {
+    fontFamily:"'Outfit', sans-serif", fontSize:13, fontWeight:600,
+    color:'rgba(255,255,255,0.5)', textTransform:'uppercase', letterSpacing:'0.08em',
+    borderBottom:'1px solid rgba(255,255,255,0.08)', paddingBottom:8, marginBottom:16,
+  },
+  card: {
+    background:'var(--navy-900)', border:'1px solid rgba(255,255,255,0.09)',
+    borderRadius:10, padding:16, display:'flex', flexDirection:'column', gap:12,
+  },
+  cardLbl: {
+    fontFamily:"'JetBrains Mono', monospace", fontSize:9, fontWeight:500,
+    letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(255,255,255,0.4)',
+  },
+  grid2: { display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 },
+}
+
+const fld = (err) => ({
+  width:'100%', background:'rgba(255,255,255,0.06)',
+  border:`1px solid ${err ? '#e05252' : 'rgba(255,255,255,0.12)'}`,
+  borderRadius:7, padding:'9px 12px', fontSize:13,
+  color:'#FFFFFF', outline:'none',
+  fontFamily:"'Outfit', sans-serif", transition:'border-color 0.15s',
+})
+const lbl = {
+  display:'block', fontSize:11, fontWeight:500,
+  color:'rgba(255,255,255,0.55)', marginBottom:6,
+}
+const errTxt = { fontSize:11, color:'#e05252', marginTop:3 }
+
+function focusGold(e) { e.target.style.borderColor = 'rgba(201,153,26,0.5)' }
+function blurNorm(e)   { e.target.style.borderColor = 'rgba(255,255,255,0.12)' }
+
+function cleanForm(f) {
+  const INT  = ['no']
+  const DATE = [
+    'tanggal_pinjam','tanggal_diterima','tanggal_bayar_pajak','tanggal_akta','tanggal_akad',
     'tanggal_pengecekan','tanggal_znt','tanggal_alih_media','tanggal_balik_nama',
     'tanggal_peningkatan_shm','tanggal_ht','tanggal_roya','tanggal_selesai','tanggal_register',
   ]
-  const cleaned = { ...form }
-  INTEGER_FIELDS.forEach(f => {
-    if (cleaned[f] === '' || cleaned[f] === null || cleaned[f] === undefined) {
-      cleaned[f] = null
-    } else {
-      const n = parseInt(cleaned[f], 10)
-      cleaned[f] = isNaN(n) ? null : n
-    }
-  })
-  DATE_FIELDS.forEach(f => {
-    if (!cleaned[f]) cleaned[f] = null
-  })
-  return cleaned
+  const c = {...f}
+  INT.forEach(k  => { c[k] = (c[k]===''||c[k]==null) ? null : (isNaN(parseInt(c[k],10)) ? null : parseInt(c[k],10)) })
+  DATE.forEach(k => { if (!c[k]) c[k] = null })
+  return c
 }
 
 export default function DocumentModal({ isOpen, onClose, onSave, record, companies, defaultCompanyId }) {
-  const [form, setForm] = useState(EMPTY)
+  const [form, setForm]     = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
     if (isOpen) {
-      setForm(record ? { ...EMPTY, ...record } : { ...EMPTY, company_id: defaultCompanyId || '' })
+      setForm(record ? {...EMPTY, ...record} : {...EMPTY, company_id: defaultCompanyId || ''})
       setErrors({})
     }
   }, [isOpen, record, defaultCompanyId])
 
-  function set(k, v) { setForm(f => ({ ...f, [k]: v })); if (errors[k]) setErrors(e => ({ ...e, [k]: '' })) }
+  const set = (k, v) => {
+    setForm(f => ({...f, [k]: v}))
+    if (errors[k]) setErrors(e => ({...e, [k]: ''}))
+  }
+
+  const setPihakPertama = (companyName) => {
+    const matched = companies.find(c => c.name === companyName)
+    setForm(f => ({...f, pihak_pertama: companyName, company_id: matched ? matched.id : f.company_id}))
+    if (errors.pihak_pertama) setErrors(e => ({...e, pihak_pertama:''}))
+  }
 
   function validate() {
     const e = {}
-    if (!form.pihak_pertama?.trim()) e.pihak_pertama = 'Wajib diisi'
-    if (!form.jenis_akad) e.jenis_akad = 'Pilih jenis akad'
-    if (!form.bank) e.bank = 'Pilih bank'
-    if (!form.company_id) e.company_id = 'Pilih perusahaan'
-    setErrors(e); return Object.keys(e).length === 0
+    if (!form.pihak_pertama) e.pihak_pertama = 'Pilih perusahaan'
+    if (!form.jenis_akad)    e.jenis_akad    = 'Pilih jenis akad'
+    if (!form.bank)          e.bank          = 'Pilih bank'
+    setErrors(e)
+    return Object.keys(e).length === 0
   }
 
   async function handleSubmit() {
     if (!validate()) return
     setSaving(true)
-    try {
-      const cleaned = cleanForm(form)
-      await onSave(cleaned)
-      onClose()
-    } finally { setSaving(false) }
+    try { await onSave(cleanForm(form)); onClose() }
+    finally { setSaving(false) }
   }
 
   if (!isOpen) return null
   const isEdit = !!record?.id
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background:'rgba(0,0,0,0.8)' }}>
-      <div className="w-full max-w-3xl max-h-[92vh] flex flex-col rounded-xl overflow-hidden"
-        style={{ background:'var(--bg-surface)', border:'1px solid var(--border-strong)' }}>
-        <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom:'1px solid var(--border)' }}>
-          <h2 style={{ fontFamily:"'Cormorant Garamond', serif", fontSize:'22px', fontWeight:600, color:'var(--text-primary)' }}>
-            {isEdit ? 'Edit Record' : 'Tambah Record Baru'}
-          </h2>
-          <button onClick={onClose} style={{ color:'var(--text-muted)', background:'none', border:'none', cursor:'pointer', fontSize:18 }}>✕</button>
+  const modal = (
+    <div style={S.overlay}>
+      <div style={{ position:'absolute', inset:0 }} onClick={onClose} />
+
+      <div style={S.modal}>
+
+        {/* ── Header ── */}
+        <div style={S.header}>
+          <div>
+            <p style={{ fontFamily:"'JetBrains Mono', monospace", fontSize:9, letterSpacing:'0.14em', color:'rgba(255,255,255,0.35)', textTransform:'uppercase', marginBottom:3 }}>
+              {isEdit ? 'Edit' : 'Tambah Baru'}
+            </p>
+            <h2 style={{ fontFamily:"'Outfit', sans-serif", fontSize:20, fontWeight:600, color:'#FFFFFF', lineHeight:1 }}>
+              {isEdit ? 'Edit Record' : 'Record Baru'}
+            </h2>
+          </div>
+          <button onClick={onClose}
+            style={{ width:32, height:32, borderRadius:7, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.5)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, transition:'all 0.15s' }}
+            onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.1)'; e.currentTarget.style.color='#fff' }}
+            onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.06)'; e.currentTarget.style.color='rgba(255,255,255,0.5)' }}>
+            ✕
+          </button>
         </div>
-        <div className="overflow-y-auto flex-1 px-6 py-5 scrollbar-thin">
 
-          <div style={{ marginBottom:20 }}>
-            <p style={sT}>Identitas</p>
-            <div className="grid grid-cols-2 gap-4">
+        {/* ── Body ── */}
+        <div className="scrollbar-thin" style={S.body}>
+
+          {/* Identitas */}
+          <div style={{ marginBottom:24 }}>
+            <p style={S.secTitle}>Identitas</p>
+            <div style={S.grid2}>
               <div>
-                <label style={lS}>No</label>
-                <input type="number" style={iS} value={form.no ?? ''} onChange={e=>set('no',e.target.value)} placeholder="Nomor urut"/>
+                <label style={lbl}>No</label>
+                <input type="number" style={fld(false)} value={form.no??''} onChange={e=>set('no',e.target.value)} placeholder="Nomor urut" onFocus={focusGold} onBlur={blurNorm}/>
               </div>
               <div>
-                <label style={lS}>Perusahaan <span style={{color:'#e05252'}}>*</span></label>
-                <select style={errors.company_id?iE:iS} value={form.company_id} onChange={e=>set('company_id',e.target.value)}>
+                <label style={lbl}>Jenis Akad <span style={{color:'#e05252'}}>*</span></label>
+                <select style={fld(errors.jenis_akad)} value={form.jenis_akad} onChange={e=>set('jenis_akad',e.target.value)}>
                   <option value="">-- Pilih --</option>
-                  {companies.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+                  {JENIS_AKAD.map(j=><option key={j} value={j}>{j}</option>)}
                 </select>
-                {errors.company_id&&<p style={{fontSize:11,color:'#e05252',marginTop:3}}>{errors.company_id}</p>}
+                {errors.jenis_akad && <p style={errTxt}>{errors.jenis_akad}</p>}
               </div>
             </div>
-            <div className="mt-3">
-              <label style={lS}>Pihak Pertama (Debitur) <span style={{color:'#e05252'}}>*</span></label>
-              <input style={errors.pihak_pertama?iE:iS} value={form.pihak_pertama} onChange={e=>set('pihak_pertama',e.target.value)} placeholder="Nama debitur"/>
-              {errors.pihak_pertama&&<p style={{fontSize:11,color:'#e05252',marginTop:3}}>{errors.pihak_pertama}</p>}
-            </div>
-            <div className="mt-3">
-              <label style={lS}>Pihak Kedua</label>
-              <input style={iS} value={form.pihak_kedua} onChange={e=>set('pihak_kedua',e.target.value)} placeholder="Nama pihak kedua"/>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mt-3">
+
+            <div style={{...S.grid2, marginTop:12}}>
               <div>
-                <label style={lS}>Jenis Akad <span style={{color:'#e05252'}}>*</span></label>
-                <select style={errors.jenis_akad?iE:iS} value={form.jenis_akad} onChange={e=>set('jenis_akad',e.target.value)}>
-                  <option value="">-- Pilih --</option>{JENIS_AKAD.map(j=><option key={j}>{j}</option>)}
+                <label style={lbl}>Pihak Pertama (Perusahaan) <span style={{color:'#e05252'}}>*</span></label>
+                <select style={fld(errors.pihak_pertama)} value={form.pihak_pertama} onChange={e=>setPihakPertama(e.target.value)}>
+                  <option value="">-- Pilih Perusahaan --</option>
+                  {companies.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
-                {errors.jenis_akad&&<p style={{fontSize:11,color:'#e05252',marginTop:3}}>{errors.jenis_akad}</p>}
+                {errors.pihak_pertama && <p style={errTxt}>{errors.pihak_pertama}</p>}
               </div>
               <div>
-                <label style={lS}>Bank <span style={{color:'#e05252'}}>*</span></label>
-                <select style={errors.bank?iE:iS} value={form.bank} onChange={e=>set('bank',e.target.value)}>
-                  <option value="">-- Pilih --</option>{BANKS.map(b=><option key={b}>{b}</option>)}
+                <label style={lbl}>Pihak Kedua</label>
+                <input style={fld(false)} value={form.pihak_kedua} onChange={e=>set('pihak_kedua',e.target.value)} placeholder="Nama pihak kedua" onFocus={focusGold} onBlur={blurNorm}/>
+              </div>
+            </div>
+
+            <div style={{...S.grid2, marginTop:12}}>
+              <div>
+                <label style={lbl}>Bank <span style={{color:'#e05252'}}>*</span></label>
+                <select style={fld(errors.bank)} value={form.bank} onChange={e=>set('bank',e.target.value)}>
+                  <option value="">-- Pilih --</option>
+                  {BANKS.map(b=><option key={b} value={b}>{b}</option>)}
                 </select>
-                {errors.bank&&<p style={{fontSize:11,color:'#e05252',marginTop:3}}>{errors.bank}</p>}
+                {errors.bank && <p style={errTxt}>{errors.bank}</p>}
               </div>
             </div>
           </div>
 
-          <div style={{ marginBottom:20 }}>
-            <p style={sT}>Akad & Pajak</p>
-            <div className="grid grid-cols-2 gap-4">
-              {[['tanggal_pinjam','Tanggal Pinjam'],['tanggal_diterima','Tanggal Diterima'],['tanggal_bayar_pajak','Tanggal Bayar Pajak'],['tanggal_akta','Tanggal Akta']].map(([k,lbl])=>(
-                <div key={k}><label style={lS}>{lbl}</label><input type="date" style={iS} value={form[k]||''} onChange={e=>set(k,e.target.value)}/></div>
+          {/* Akad & Pajak */}
+          <div style={{ marginBottom:24 }}>
+            <p style={S.secTitle}>Akad &amp; Pajak</p>
+            <div style={S.grid2}>
+
+              {/* Tanggal Pinjam + PDF */}
+              <div style={S.card}>
+                <p style={S.cardLbl}>Tanggal Pinjam</p>
+                <div>
+                  <label style={lbl}>Tanggal</label>
+                  <input type="date" style={fld(false)} value={form.tanggal_pinjam||''} onChange={e=>set('tanggal_pinjam',e.target.value)}/>
+                </div>
+                <PdfUploadField label="Dokumen PDF" value={form.pdf_pinjam} onChange={v=>set('pdf_pinjam',v)} docId={record?.id} fieldName="pinjam"/>
+              </div>
+
+              {/* Tanggal Diterima + PDF */}
+              <div style={S.card}>
+                <p style={S.cardLbl}>Tanggal Diterima</p>
+                <div>
+                  <label style={lbl}>Tanggal</label>
+                  <input type="date" style={fld(false)} value={form.tanggal_diterima||''} onChange={e=>set('tanggal_diterima',e.target.value)}/>
+                </div>
+                <PdfUploadField label="Dokumen PDF" value={form.pdf_diterima} onChange={v=>set('pdf_diterima',v)} docId={record?.id} fieldName="diterima"/>
+              </div>
+
+              {/* Tanggal Bayar Pajak + PDF */}
+              <div style={S.card}>
+                <p style={S.cardLbl}>Tanggal Bayar Pajak</p>
+                <div>
+                  <label style={lbl}>Tanggal</label>
+                  <input type="date" style={fld(false)} value={form.tanggal_bayar_pajak||''} onChange={e=>set('tanggal_bayar_pajak',e.target.value)}/>
+                </div>
+                <PdfUploadField label="Dokumen PDF" value={form.pdf_bayar_pajak} onChange={v=>set('pdf_bayar_pajak',v)} docId={record?.id} fieldName="bayar_pajak"/>
+              </div>
+
+              {/* Tanggal Akta — plain */}
+              <div>
+                <label style={lbl}>Tanggal Akta</label>
+                <input type="date" style={fld(false)} value={form.tanggal_akta||''} onChange={e=>set('tanggal_akta',e.target.value)}/>
+              </div>
+
+              {/* Tanggal Akad — plain, full width */}
+              <div style={{ gridColumn:'1 / -1' }}>
+                <label style={lbl}>Tanggal Akad</label>
+                <input type="date" style={fld(false)} value={form.tanggal_akad||''} onChange={e=>set('tanggal_akad',e.target.value)}/>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Kegiatan */}
+          <div style={{ marginBottom:24 }}>
+            <p style={S.secTitle}>Kegiatan</p>
+            <p style={{ fontSize:12, color:'rgba(255,255,255,0.35)', marginBottom:14 }}>Isi tanggal saat kegiatan selesai dilakukan.</p>
+            <div style={S.grid2}>
+              {KEGIATAN.map(({key, label:kLabel}) => (
+                <div key={key}>
+                  <label style={lbl}>{kLabel}</label>
+                  <input type="date" style={fld(false)} value={form[key]||''} onChange={e=>set(key,e.target.value)}/>
+                </div>
               ))}
             </div>
           </div>
 
-          <div style={{ marginBottom:20 }}>
-            <p style={sT}>Kegiatan</p>
-            <p style={{fontSize:11,color:'var(--text-muted)',marginBottom:12}}>Isi tanggal saat kegiatan selesai dilakukan.</p>
-            <div className="grid grid-cols-2 gap-4">
-              {KEGIATAN.map(({key,label})=>(
-                <div key={key}><label style={lS}>{label}</label><input type="date" style={iS} value={form[key]||''} onChange={e=>set(key,e.target.value)}/></div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ marginBottom:20 }}>
-            <p style={sT}>Selesai & Register</p>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-3 p-4 rounded-lg" style={{background:'var(--bg-raised)',border:'1px solid var(--border))'}}>
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{color:'var(--gold)',opacity:0.8}}>Selesai</p>
-                <div><label style={lS}>Tanggal Selesai</label><input type="date" style={iS} value={form.tanggal_selesai||''} onChange={e=>set('tanggal_selesai',e.target.value)}/></div>
+          {/* Selesai & Register */}
+          <div style={{ marginBottom:24 }}>
+            <p style={S.secTitle}>Selesai &amp; Register</p>
+            <div style={S.grid2}>
+              <div style={S.card}>
+                <p style={S.cardLbl}>Selesai</p>
+                <div>
+                  <label style={lbl}>Tanggal Selesai</label>
+                  <input type="date" style={fld(false)} value={form.tanggal_selesai||''} onChange={e=>set('tanggal_selesai',e.target.value)}/>
+                </div>
                 <PdfUploadField label="Dokumen PDF" value={form.pdf_selesai} onChange={v=>set('pdf_selesai',v)} docId={record?.id} fieldName="selesai"/>
               </div>
-              <div className="space-y-3 p-4 rounded-lg" style={{background:'var(--bg-raised)',border:'1px solid var(--border)'}}>
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{color:'var(--gold)',opacity:0.8}}>Register (Penyerahan ke Bank)</p>
-                <div><label style={lS}>Tanggal Register</label><input type="date" style={iS} value={form.tanggal_register||''} onChange={e=>set('tanggal_register',e.target.value)}/></div>
+              <div style={S.card}>
+                <p style={S.cardLbl}>Register (Penyerahan ke Bank)</p>
+                <div>
+                  <label style={lbl}>Tanggal Register</label>
+                  <input type="date" style={fld(false)} value={form.tanggal_register||''} onChange={e=>set('tanggal_register',e.target.value)}/>
+                </div>
                 <PdfUploadField label="Dokumen PDF" value={form.pdf_register} onChange={v=>set('pdf_register',v)} docId={record?.id} fieldName="register"/>
               </div>
             </div>
           </div>
 
-          <div style={{ marginBottom:20 }}>
-            <p style={sT}>Keterangan</p>
-            <textarea style={{...iS,resize:'none'}} rows={3} value={form.keterangan||''} onChange={e=>set('keterangan',e.target.value)} placeholder="Catatan tambahan…"/>
+          {/* Keterangan */}
+          <div style={{ marginBottom:8 }}>
+            <p style={S.secTitle}>Keterangan</p>
+            <textarea style={{...fld(false), resize:'none', lineHeight:1.6}} rows={3}
+              value={form.keterangan||''} onChange={e=>set('keterangan',e.target.value)}
+              placeholder="Catatan tambahan…" onFocus={focusGold} onBlur={blurNorm}/>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 flex-shrink-0" style={{borderTop:'1px solid var(--border)',background:'var(--bg-raised)'}}>
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm" style={{border:'1px solid var(--border-strong)',color:'var(--text-secondary)',background:'transparent'}}>Batal</button>
-          <button onClick={handleSubmit} disabled={saving} className="px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2"
-            style={{background:'var(--gold-dim)',color:'var(--gold)',border:'1px solid var(--gold-border)'}}>
-            {saving&&<svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle style={{opacity:0.25}} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path style={{opacity:0.75}} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
-            {saving?'Menyimpan…':isEdit?'Simpan Perubahan':'Tambah Record'}
+        {/* ── Footer ── */}
+        <div style={S.footer}>
+          <button onClick={onClose}
+            style={{ padding:'9px 20px', borderRadius:8, border:'1px solid rgba(255,255,255,0.12)', color:'rgba(255,255,255,0.6)', background:'transparent', fontSize:13, cursor:'pointer', transition:'all 0.15s' }}
+            onMouseEnter={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.07)'; e.currentTarget.style.color='#fff' }}
+            onMouseLeave={e=>{ e.currentTarget.style.background='transparent'; e.currentTarget.style.color='rgba(255,255,255,0.6)' }}>
+            Batal
+          </button>
+          <button onClick={handleSubmit} disabled={saving}
+            style={{ padding:'9px 22px', borderRadius:8, border:'none', background:saving?'var(--navy-600)':'var(--gold-500)', color:saving?'rgba(255,255,255,0.4)':'var(--navy-900)', fontSize:13, fontWeight:600, cursor:saving?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:7, transition:'all 0.15s' }}
+            onMouseEnter={e=>{ if(!saving) e.currentTarget.style.background='var(--gold-400)' }}
+            onMouseLeave={e=>{ if(!saving) e.currentTarget.style.background='var(--gold-500)' }}>
+            {saving && (
+              <svg style={{width:14,height:14,animation:'spin 1s linear infinite'}} fill="none" viewBox="0 0 24 24">
+                <circle style={{opacity:0.25}} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path style={{opacity:0.75}} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            )}
+            {saving ? 'Menyimpan…' : isEdit ? 'Simpan Perubahan' : 'Tambah Record'}
           </button>
         </div>
       </div>
+
+      <style>{`@keyframes spin { from { transform:rotate(0deg) } to { transform:rotate(360deg) } }`}</style>
     </div>
   )
+
+  return createPortal(modal, document.body)
 }

@@ -3,11 +3,12 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { AppLayout } from './layouts/AppLayout'
-import LoginPage from './pages/LoginPage'
+import LandingPage  from './pages/LandingPage'
+import LoginPage    from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import DocumentsPage from './pages/DocumentsPage'
 import CompaniesPage from './pages/CompaniesPage'
-import UsersPage from './pages/UsersPage'
+import UsersPage    from './pages/UsersPage'
 
 export default function App() {
   return (
@@ -16,32 +17,35 @@ export default function App() {
         position="top-right"
         toastOptions={{
           style: {
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Outfit', sans-serif",
             borderRadius: '8px',
-            background: '#1e293b',
-            color: '#f8fafc',
-            fontSize: '14px',
+            background: '#162844',
+            color: '#E8E0D0',
+            fontSize: '13px',
+            border: '1px solid rgba(201,153,26,0.2)',
           },
-          success: { iconTheme: { primary: '#22c55e', secondary: '#fff' } },
-          error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
+          success: { iconTheme: { primary: '#C9991A', secondary: '#0A1628' } },
+          error:   { iconTheme: { primary: '#e05252', secondary: '#fff' } },
         }}
       />
       <Routes>
+        {/* Public */}
+        <Route path="/"      element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
 
+        {/* Protected */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            <Route path="/dashboard"  element={<DashboardPage />} />
-            <Route path="/documents"  element={<DocumentsPage />} />
-            <Route path="/companies"  element={<CompaniesPage />} />
-
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/documents" element={<DocumentsPage />} />
+            <Route path="/companies" element={<CompaniesPage />} />
             <Route element={<ProtectedRoute adminOnly />}>
               <Route path="/users" element={<UsersPage />} />
             </Route>
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   )
