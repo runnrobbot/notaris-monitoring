@@ -46,14 +46,38 @@ function StatusBadge({ rec }) {
   return <span className="stamp stamp-ghost">Belum</span>
 }
 
-function PdfIcon({ url }) {
-  if (!url) return null
+/** Normalkan nilai pdf ke array — kompatibel data lama (object) & baru (array) */
+function normPdf(val) {
+  if (!val) return []
+  if (Array.isArray(val)) return val.filter(f => f?.url)
+  if (typeof val === 'object' && val.url) return [val]
+  return []
+}
+
+/** Cek apakah nilai pdf mengandung setidaknya satu file */
+function hasPdf(val) {
+  return normPdf(val).length > 0
+}
+
+/**
+ * PdfIcon — menampilkan ikon PDF merah untuk setiap file dalam array.
+ * Prop: pdfData = nilai kolom pdf (array, object lama, atau null)
+ */
+function PdfIcon({ pdfData }) {
+  const files = normPdf(pdfData)
+  if (!files.length) return null
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" style={{ marginLeft:3, display:'inline-flex', flexShrink:0 }} title="Lihat PDF">
-      <svg width="11" height="11" fill="currentColor" viewBox="0 0 20 20" style={{ color:'#e05252', opacity:0.85 }}>
-        <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
-      </svg>
-    </a>
+    <span style={{ display:'inline-flex', gap:2, marginLeft:3 }}>
+      {files.map((f, i) => (
+        <a key={i} href={f.url} target="_blank" rel="noopener noreferrer"
+          style={{ display:'inline-flex', flexShrink:0 }}
+          title={f.name || `PDF ${i + 1}`}>
+          <svg width="11" height="11" fill="currentColor" viewBox="0 0 20 20" style={{ color:'#e05252', opacity:0.85 }}>
+            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+          </svg>
+        </a>
+      ))}
+    </span>
   )
 }
 
@@ -81,14 +105,14 @@ function MobileCard({ doc, companyMap, idx, onPreview, onEdit, onDelete }) {
 
   // Collect filled date fields for summary
   const activeDates = [
-    { label:'Pinjam',    val:doc.tanggal_pinjam,      pdf:doc.pdf_pinjam?.url },
-    { label:'Diterima',  val:doc.tanggal_diterima,    pdf:doc.pdf_diterima?.url },
-    { label:'Pajak',     val:doc.tanggal_bayar_pajak, pdf:doc.pdf_bayar_pajak?.url },
+    { label:'Pinjam',    val:doc.tanggal_pinjam,      pdf:doc.pdf_pinjam },
+    { label:'Diterima',  val:doc.tanggal_diterima,    pdf:doc.pdf_diterima },
+    { label:'Pajak',     val:doc.tanggal_bayar_pajak, pdf:doc.pdf_bayar_pajak },
     { label:'Akta',      val:doc.tanggal_akta },
     { label:'Akad',      val:doc.tanggal_akad },
     ...DATE_COLS.map(c => ({ label:c.label, val:doc[c.key] })),
-    { label:'Selesai',   val:doc.tanggal_selesai,     pdf:doc.pdf_selesai?.url },
-    { label:'Register',  val:doc.tanggal_register,    pdf:doc.pdf_register?.url },
+    { label:'Selesai',   val:doc.tanggal_selesai,  pdf:doc.pdf_selesai },
+    { label:'Register',  val:doc.tanggal_register, pdf:doc.pdf_register },
   ].filter(d => d.val)
 
   return (
@@ -131,7 +155,7 @@ function MobileCard({ doc, companyMap, idx, onPreview, onEdit, onDelete }) {
               <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'0.08em' }}>{label}</span>
               <span style={{ display:'inline-flex', alignItems:'center', gap:2, fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:'rgba(255,255,255,0.7)' }}>
                 {fmtDate(val)}
-                {pdf && <PdfIcon url={pdf} />}
+                {pdf && <PdfIcon pdfData={pdf} />}
               </span>
             </div>
           ))}
@@ -155,13 +179,13 @@ export default function DocumentsPage() {
   const [page, setPage]             = useState(1)
   const PAGE_SIZE = 20
 
-  const [modalOpen, setModalOpen]       = useState(false)
-  const [editRecord, setEditRecord]     = useState(null)
-  const [previewOpen, setPreviewOpen]   = useState(false)
+  const [modalOpen, setModalOpen]         = useState(false)
+  const [editRecord, setEditRecord]       = useState(null)
+  const [previewOpen, setPreviewOpen]     = useState(false)
   const [previewRecord, setPreviewRecord] = useState(null)
-  const [deleteId, setDeleteId]         = useState(null)
-  const [deleting, setDeleting]         = useState(false)
-  const [importOpen, setImportOpen]     = useState(false)
+  const [deleteId, setDeleteId]           = useState(null)
+  const [deleting, setDeleting]           = useState(false)
+  const [importOpen, setImportOpen]       = useState(false)
 
   useEffect(() => {
     getCompanies().then(list => {
@@ -209,14 +233,18 @@ export default function DocumentsPage() {
       const updated = await updateDocument(form.id, form)
       setDocs(prev => prev.map(d => d.id === form.id ? { ...d, ...updated } : d))
     } else {
+      // Pisahkan kolom PDF dari payload utama saat insert pertama
       const { pdf_selesai, pdf_register, pdf_pinjam, pdf_bayar_pajak, pdf_diterima, ...rest } = form
       const newDoc = await addDocument(rest, userProfile?.id)
+
+      // Setelah dapat ID, baru simpan PDF (karena path storage butuh docId)
       const pdfUpdates = {}
-      if (pdf_selesai?.url)     pdfUpdates.pdf_selesai     = pdf_selesai
-      if (pdf_register?.url)    pdfUpdates.pdf_register    = pdf_register
-      if (pdf_pinjam?.url)      pdfUpdates.pdf_pinjam      = pdf_pinjam
-      if (pdf_bayar_pajak?.url) pdfUpdates.pdf_bayar_pajak = pdf_bayar_pajak
-      if (pdf_diterima?.url)    pdfUpdates.pdf_diterima    = pdf_diterima
+      if (hasPdf(pdf_selesai))     pdfUpdates.pdf_selesai     = pdf_selesai
+      if (hasPdf(pdf_register))    pdfUpdates.pdf_register    = pdf_register
+      if (hasPdf(pdf_pinjam))      pdfUpdates.pdf_pinjam      = pdf_pinjam
+      if (hasPdf(pdf_bayar_pajak)) pdfUpdates.pdf_bayar_pajak = pdf_bayar_pajak
+      if (hasPdf(pdf_diterima))    pdfUpdates.pdf_diterima    = pdf_diterima
+
       let finalDoc = newDoc
       if (Object.keys(pdfUpdates).length > 0) finalDoc = await updateDocument(newDoc.id, pdfUpdates)
       setDocs(prev => [{ ...newDoc, ...finalDoc }, ...prev])
@@ -347,13 +375,13 @@ export default function DocumentsPage() {
                   <td style={{ ...TD, borderRight:'1px solid var(--border)', color:'rgba(255,255,255,0.6)' }}>{doc.jenis_akad||'—'}</td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)', color:'rgba(255,255,255,0.6)' }}>{doc.bank||'—'}</td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)' }}>
-                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_pinjam}/><PdfIcon url={doc.pdf_pinjam?.url}/></span>
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_pinjam}/><PdfIcon pdfData={doc.pdf_pinjam}/></span>
                   </td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)' }}>
-                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_diterima}/><PdfIcon url={doc.pdf_diterima?.url}/></span>
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_diterima}/><PdfIcon pdfData={doc.pdf_diterima}/></span>
                   </td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)' }}>
-                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_bayar_pajak}/><PdfIcon url={doc.pdf_bayar_pajak?.url}/></span>
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_bayar_pajak}/><PdfIcon pdfData={doc.pdf_bayar_pajak}/></span>
                   </td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)' }}><DateCell val={doc.tanggal_akta}/></td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)' }}><DateCell val={doc.tanggal_akad}/></td>
@@ -361,10 +389,10 @@ export default function DocumentsPage() {
                     <td key={c.key} style={{ ...TD, borderRight:'1px solid var(--border)' }}><DateCell val={doc[c.key]}/></td>
                   ))}
                   <td style={{ ...TD, borderRight:'1px solid var(--border)' }}>
-                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_selesai}/><PdfIcon url={doc.pdf_selesai?.url}/></span>
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_selesai}/><PdfIcon pdfData={doc.pdf_selesai}/></span>
                   </td>
                   <td style={{ ...TD, borderRight:'1px solid var(--border)' }}>
-                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_register}/><PdfIcon url={doc.pdf_register?.url}/></span>
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:2 }}><DateCell val={doc.tanggal_register}/><PdfIcon pdfData={doc.pdf_register}/></span>
                   </td>
                   <td style={{ ...TD, textAlign:'center', borderRight:'1px solid var(--border)' }}><StatusBadge rec={doc}/></td>
                   <td style={{ ...TD, textAlign:'center' }}>
@@ -452,10 +480,10 @@ export default function DocumentsPage() {
         onSuccess={()=>{
           setImportOpen(false)
           if (!userProfile) return
-          const isStaff = userProfile.role==='staff'
-          const assigned = userProfile.assigned_companies||[]
+          const isStaff  = userProfile.role === 'staff'
+          const assigned = userProfile.assigned_companies || []
           const p = isStaff ? getDocumentsByCompanies(assigned) : getDocuments()
-          p.then(data=>setDocs(data))
+          p.then(data => setDocs(data))
         }}
       />
     </div>
