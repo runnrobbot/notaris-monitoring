@@ -68,11 +68,10 @@ export default function PreviewModal({ isOpen, onClose, record, companyName }) {
   const rowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '5px 0', borderBottom: '1px solid var(--border)' }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }}>
-      <div className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-xl overflow-hidden"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-strong)' }}>
+    <div style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:16, background:'rgba(0,0,0,0.85)' }}>
+      <div style={{ position:'relative', width:'100%', maxWidth:672, maxHeight:'92vh', display:'flex', flexDirection:'column', borderRadius:12, overflow:'hidden', background:'var(--bg-surface)', border:'1px solid var(--border-strong)' }}>
 
-        <div className="flex items-start justify-between px-6 py-5 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', padding:'20px 24px', borderBottom:'1px solid var(--border)', flexShrink:0 }}>
           <div>
             <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '22px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.1 }}>
               {record.pihak_pertama || '—'}
@@ -81,7 +80,7 @@ export default function PreviewModal({ isOpen, onClose, record, companyName }) {
               {companyName || record.company_id} · {record.jenis_akad} · {record.bank}
             </p>
           </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div style={{ display:'flex', alignItems:'center', gap:12, flexShrink:0 }}>
             <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest"
               style={{ background: status.bg, color: status.color, border: `1px solid ${status.border}` }}>
               {status.label}
@@ -93,16 +92,15 @@ export default function PreviewModal({ isOpen, onClose, record, companyName }) {
           </div>
         </div>
 
-        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5 scrollbar-thin">
+        <div style={{ overflowY:'auto', flex:1, padding:'20px 24px', display:'flex', flexDirection:'column', gap:20 }} className="scrollbar-thin">
 
-          <div className="p-4 rounded-xl" style={{ background: 'var(--bg-raised)', border: '1px solid var(--border)' }}>
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Progress Kegiatan</p>
-              <p className="text-xs font-semibold" style={{ color: 'var(--gold)' }}>{doneCount}/{KEGIATAN.length}</p>
+          <div style={{ padding:16, borderRadius:12, background:'var(--bg-raised)', border:'1px solid var(--border)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+              <p style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--text-muted)' }}>Progress Kegiatan</p>
+              <p style={{ fontSize:12, fontWeight:600, color:'var(--gold)' }}>{doneCount}/{KEGIATAN.length}</p>
             </div>
-            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <div className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--gold) 0%, rgba(201,168,76,0.6) 100%)' }} />
+            <div style={{ height:6, borderRadius:9999, overflow:'hidden', background:'rgba(255,255,255,0.06)' }}>
+              <div style={{ height:'100%', borderRadius:9999, transition:'width 0.7s', width:`${pct}%`, background:'linear-gradient(90deg, var(--gold) 0%, rgba(201,168,76,0.6) 100%)' }} />
             </div>
           </div>
 
@@ -131,12 +129,12 @@ export default function PreviewModal({ isOpen, onClose, record, companyName }) {
           </Section>
 
           <Section title="Kegiatan">
-            <div className="grid grid-cols-2 gap-x-4">
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 16px' }}>
               {KEGIATAN.map(({ key, label }) => (
-                <div key={key} className="flex items-center justify-between py-1.5" style={{ borderBottom: '1px solid var(--border)' }}>
+                <div key={key} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 0', borderBottom:'1px solid var(--border)' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
                   {record[key]
-                    ? <span className="flex items-center gap-1 text-[10px] font-medium" style={{ color: 'var(--gold)' }}>✓ {fmtDate(record[key])}</span>
+                    ? <span style={{ display:'flex', alignItems:'center', gap:4, fontSize:10, fontWeight:500, color:'var(--gold)' }}>✓ {fmtDate(record[key])}</span>
                     : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Belum</span>}
                 </div>
               ))}
@@ -144,13 +142,13 @@ export default function PreviewModal({ isOpen, onClose, record, companyName }) {
           </Section>
 
           <Section title="Selesai & Register">
-            <div className="grid grid-cols-2 gap-4">
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
               {[
                 { title: 'Selesai', dateKey: 'tanggal_selesai', pdfKey: 'pdf_selesai' },
                 { title: 'Register (Penyerahan ke Bank)', dateKey: 'tanggal_register', pdfKey: 'pdf_register' },
               ].map(({ title, dateKey, pdfKey }) => (
-                <div key={dateKey} className="p-3 rounded-lg space-y-2" style={{ background: 'var(--bg-raised)', border: '1px solid var(--border)' }}>
-                  <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--gold)', opacity: 0.8 }}>{title}</p>
+                <div key={dateKey} style={{ padding:12, borderRadius:8, display:'flex', flexDirection:'column', gap:8, background:'var(--bg-raised)', border:'1px solid var(--border)' }}>
+                  <p style={{ fontSize:10, textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600, color:'var(--gold)', opacity:0.8 }}>{title}</p>
                   <p style={{ fontSize: 11, color: record[dateKey] ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                     {fmtDate(record[dateKey]) || 'Belum ada tanggal'}
                   </p>
@@ -167,9 +165,10 @@ export default function PreviewModal({ isOpen, onClose, record, companyName }) {
           )}
         </div>
 
-        <div className="flex justify-end px-6 py-4 flex-shrink-0" style={{ borderTop: '1px solid var(--border)', background: 'var(--bg-raised)' }}>
-          <button onClick={onClose} className="px-5 py-2 rounded-lg text-sm transition"
-            style={{ border: '1px solid var(--border-strong)', color: 'var(--text-secondary)', background: 'transparent' }}>
+        <div style={{ display:'flex', justifyContent:'flex-end', padding:'16px 24px', flexShrink:0, borderTop:'1px solid var(--border)', background:'var(--bg-raised)' }}>
+          <button onClick={onClose} style={{ padding:'6px 20px', borderRadius:8, fontSize:14, transition:'all 0.15s', border:'1px solid var(--border-strong)', color:'var(--text-secondary)', background:'transparent', cursor:'pointer' }}
+            onMouseEnter={e=>e.currentTarget.style.color='var(--text-primary)'}
+            onMouseLeave={e=>e.currentTarget.style.color='var(--text-secondary)'}>
             Tutup
           </button>
         </div>

@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { LayoutDashboard, FileText, Building2, Users, X, Trash2 } from 'lucide-react'
+import { LayoutDashboard, FileText, Building2, Users, X, Trash2, Settings } from 'lucide-react'
 import logoSrc from '../assets/logo.png'
 
 const NAV = [
@@ -9,7 +9,10 @@ const NAV = [
   { to: '/companies', label: 'Perusahaan', icon: Building2 },
   { to: '/trash',     label: 'Sampah',     icon: Trash2 },
 ]
-const ADMIN_NAV = [{ to: '/users', label: 'Pengguna', icon: Users }]
+const ADMIN_NAV = [
+  { to: '/users',    label: 'Pengguna',   icon: Users },
+  { to: '/settings', label: 'Referensi',  icon: Settings },
+]
 
 export function Sidebar({ open, onClose }) {
   const { userProfile, isAdmin } = useAuth()

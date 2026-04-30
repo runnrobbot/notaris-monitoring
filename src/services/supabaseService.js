@@ -238,6 +238,74 @@ export function computeDashboardStats(docs, companies) {
   return { totalDocs, selesai, proses, belum, totalCompanies: companies.length, completionRate }
 }
 
+// ─── BANKS ───────────────────────────────────────────────────────────────────
+
+export async function getBanks() {
+  const { data, error } = await supabase
+    .from('banks')
+    .select('*')
+    .order('name', { ascending: true })
+  throwIf(error, 'getBanks')
+  return data
+}
+
+export async function addBank(name) {
+  const { data, error } = await supabase
+    .from('banks')
+    .insert({ name: name.trim(), created_at: new Date().toISOString() })
+    .select().single()
+  throwIf(error, 'addBank')
+  return data
+}
+
+export async function updateBank(id, name) {
+  const { data, error } = await supabase
+    .from('banks')
+    .update({ name: name.trim(), updated_at: new Date().toISOString() })
+    .eq('id', id).select().single()
+  throwIf(error, 'updateBank')
+  return data
+}
+
+export async function deleteBank(id) {
+  const { error } = await supabase.from('banks').delete().eq('id', id)
+  throwIf(error, 'deleteBank')
+}
+
+// ─── JENIS AKAD ───────────────────────────────────────────────────────────────
+
+export async function getJenisAkad() {
+  const { data, error } = await supabase
+    .from('jenis_akad')
+    .select('*')
+    .order('name', { ascending: true })
+  throwIf(error, 'getJenisAkad')
+  return data
+}
+
+export async function addJenisAkad(name) {
+  const { data, error } = await supabase
+    .from('jenis_akad')
+    .insert({ name: name.trim(), created_at: new Date().toISOString() })
+    .select().single()
+  throwIf(error, 'addJenisAkad')
+  return data
+}
+
+export async function updateJenisAkad(id, name) {
+  const { data, error } = await supabase
+    .from('jenis_akad')
+    .update({ name: name.trim(), updated_at: new Date().toISOString() })
+    .eq('id', id).select().single()
+  throwIf(error, 'updateJenisAkad')
+  return data
+}
+
+export async function deleteJenisAkad(id) {
+  const { error } = await supabase.from('jenis_akad').delete().eq('id', id)
+  throwIf(error, 'deleteJenisAkad')
+}
+
 // ─── PRIVATE ─────────────────────────────────────────────────────────────────
 
 function stripUndefined(obj) {

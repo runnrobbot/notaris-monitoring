@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import PdfUploadField from './PdfUploadField'
+import { getBanks, getJenisAkad } from '../services/supabaseService'
+import { supabase } from '../supabase'
 
-const JENIS_AKAD = ['KPR','KPA','KKB','Multiguna','Komersial','Lainnya']
-const BANKS = ['BTN','BTN Syariah','BRI','BRI Syariah','BNI','BNI Syariah','Mandiri','BSI','CIMB Niaga','Danamon','Permata','Lainnya']
 const KEGIATAN = [
   { key:'tanggal_pengecekan',      label:'Pengecekan' },
   { key:'tanggal_znt',             label:'ZNT' },
@@ -97,9 +97,23 @@ function cleanForm(f) {
 }
 
 export default function DocumentModal({ isOpen, onClose, onSave, record, companies, defaultCompanyId }) {
-  const [form, setForm]     = useState(EMPTY)
-  const [saving, setSaving] = useState(false)
-  const [errors, setErrors] = useState({})
+  const [form, setForm]         = useState(EMPTY)
+  const [saving, setSaving]     = useState(false)
+  const [errors, setErrors]     = useState({})
+  const [bankList, setBankList]         = useState([])
+  const [jenisAkadList, setJenisAkadList] = useState([])
+
+  // Fetch banks & jenis_akad from DB, dengan realtime
+  useEffect(() => {
+    getBanks().then(setBankList)
+    getJenisAkad().then(setJenisAkadList)
+
+    const ch = supabase.channel('modal-refs')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'banks' }, () => getBanks().then(setBankList))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'jenis_akad' }, () => getJenisAkad().then(setJenisAkadList))
+      .subscribe()
+    return () => supabase.removeChannel(ch)
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
@@ -177,7 +191,7 @@ export default function DocumentModal({ isOpen, onClose, onSave, record, compani
                 <label style={lbl}>Jenis Akad <span style={{color:'#e05252'}}>*</span></label>
                 <select style={fld(errors.jenis_akad)} value={form.jenis_akad} onChange={e=>set('jenis_akad',e.target.value)}>
                   <option value="">-- Pilih --</option>
-                  {JENIS_AKAD.map(j=><option key={j} value={j}>{j}</option>)}
+                  {jenisAkadList.map(j=><option key={j.id} value={j.name}>{j.name}</option>)}
                 </select>
                 {errors.jenis_akad && <p style={errTxt}>{errors.jenis_akad}</p>}
               </div>
@@ -203,7 +217,7 @@ export default function DocumentModal({ isOpen, onClose, onSave, record, compani
                 <label style={lbl}>Bank <span style={{color:'#e05252'}}>*</span></label>
                 <select style={fld(errors.bank)} value={form.bank} onChange={e=>set('bank',e.target.value)}>
                   <option value="">-- Pilih --</option>
-                  {BANKS.map(b=><option key={b} value={b}>{b}</option>)}
+                  {bankList.map(b=><option key={b.id} value={b.name}>{b.name}</option>)}
                 </select>
                 {errors.bank && <p style={errTxt}>{errors.bank}</p>}
               </div>

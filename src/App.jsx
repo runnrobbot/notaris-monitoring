@@ -11,6 +11,8 @@ import CompaniesPage from './pages/CompaniesPage'
 import UsersPage     from './pages/UsersPage'
 import TrashPage     from './pages/TrashPage'
 
+import SettingsPage  from './pages/SettingsPage'
+
 export default function App() {
   return (
     <AuthProvider>
@@ -43,7 +45,8 @@ export default function App() {
             <Route path="/trash"     element={<TrashPage />} />
 
             <Route element={<ProtectedRoute adminOnly />}>
-              <Route path="/users" element={<UsersPage />} />
+              <Route path="/users"    element={<UsersPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
         </Route>

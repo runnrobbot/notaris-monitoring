@@ -5,6 +5,7 @@ import {
   getCompanies, addCompany, updateCompany, deleteCompany,
   getDocuments, getDocumentsByCompanies, seedCompaniesFromNamaDeveloper,
 } from '../services/supabaseService'
+import { supabase } from '../supabase'
 import { Building2, Plus, Pencil, Trash2, X, Save, Loader2, RefreshCw, FileText, Database, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -84,7 +85,16 @@ export default function CompaniesPage() {
     finally { setLoading(false) }
   }
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => {
+    fetchData()
+
+    // Realtime
+    const ch = supabase.channel('companies-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documents' }, () => fetchData())
+      .subscribe()
+    return () => supabase.removeChannel(ch)
+  }, [])
 
   async function handleSubmit(data) {
     setSaving(true)
